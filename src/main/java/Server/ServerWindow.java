@@ -63,7 +63,7 @@ public class ServerWindow extends JFrame {
                 if (!isServerWorking){
                     appendLog("Server is not running" + "\n");
                 } else {
-                    ClientDataBase.pushDB();
+//                    ClientDataBase.pushDB();
                     isServerWorking = false;
                     appendLog("Server stopped " + false + "\n");
                     Server.stopServer();

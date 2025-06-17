@@ -24,8 +24,9 @@ public class ClientGUI extends JFrame {
 
 
     private final String SERVER_IS_DOWN = "connection failed\ntry again later\n";
-    private final JTextField server = new JTextField(20);
-    private JTextField port = new JTextField(20);
+    private final JTextField server = new JTextField("127.0.0.1");
+//    private JTextField port = new JTextField(20);
+    private JComboBox<String> port = new JComboBox<>();
     private  JTextField nickName = new JTextField(20);
     private  JPasswordField passwd = new JPasswordField(20);
     private  JButton logInBtn = new JButton("login");
@@ -59,8 +60,8 @@ public class ClientGUI extends JFrame {
 
     private void connectToServer(){
         try {
-            if(checkLogin(server.getText(), port.getText(), nickName.getText(), passwd.getPassword())){
-                Server.reservePort(port.getText());
+            if(checkLogin(server.getText(), port.getItemAt(port.getSelectedIndex()), nickName.getText(), passwd.getPassword())){
+                Server.reservePort(port.getItemAt(port.getSelectedIndex()));
 //                ClientDataBase.getClientByNickName(nickName.getText()).setOnline();
                 logged = true;
                 loginPanel.setVisible(false);
@@ -73,18 +74,18 @@ public class ClientGUI extends JFrame {
         }
     }
 
-    public void disconnectFromServer(){
+    public void disconnectFromServer(boolean isClientGuiClosed){
         if(logged){
             logged = false;
             ClientDataBase.getClientByNickName(nickName.getText()).setOffline();
             loginPanel.setVisible(true);
-            Server.disconnect(this);
+            Server.disconnect(this, isClientGuiClosed);
             log.setText("disconnect\n");
         }
     }
 
     public String getPort(){
-        return port.getText();
+        return port.getItemAt(port.getSelectedIndex());
     }
 
     private Component createHeader(){
@@ -99,10 +100,14 @@ public class ClientGUI extends JFrame {
         signUpBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                signUp(new Client(nickName.getText(), passwd.getPassword()));
-                log.append("signed up successfully");
+                if(signUp(new Client(nickName.getText(), passwd.getPassword()))) log.append("signed up successfully");
             }
         });
+
+        port.setEditable(true);
+        port.addItem("80");
+        port.addItem("17");
+        port.addItem("84");
 
         loginPanel.add(server);
         loginPanel.add(port);
@@ -113,8 +118,14 @@ public class ClientGUI extends JFrame {
         return loginPanel;
     }
 
-    private void signUp(Client client){
-        ClientDataBase.signUp(client);
+    private boolean signUp(Client client){
+        try {
+            ClientDataBase.signUp(client);
+            return true;
+        } catch (RuntimeException e) {
+            log.append(e.getMessage());
+            return false;
+        }
     }
 
     private Component createFooter(){
@@ -220,7 +231,7 @@ public class ClientGUI extends JFrame {
     @Override
     protected void processWindowEvent(WindowEvent e) {
         if (e.getID() == WindowEvent.WINDOW_CLOSING){
-            disconnectFromServer();
+            disconnectFromServer(true);
         }
         super.processWindowEvent(e);
     }

@@ -35,7 +35,7 @@ public class Server {
         if(!clientsOnline.contains(client)){
             clientsOnline.add(client);
         }
-        ServerWindow.appendLog(client.getNickName() + " connected to server\n" + readInChat());
+        ServerWindow.appendLog("\n" + client.getNickName() + " connected to server\n" + readInChat());
     }
 
     private static boolean isServerRight(String server) throws WrongServerException {
@@ -44,12 +44,12 @@ public class Server {
         }else throw new WrongServerException("server not found\ntry another\n");
     }
 
-    public static void disconnect(ClientGUI client){
+    public static void disconnect(ClientGUI client, boolean isClientGuiClosed){
         for (int i = 0; i < clientsOnline.size(); i++) {
             if(client.equals(clientsOnline.get(i))){
-                client.disconnectFromServer();
+                if(!isClientGuiClosed) client.disconnectFromServer(false);
                 clientsOnline.get(i).setLogged(false);
-//                client.setLogged(false);
+                ServerWindow.appendLog("\n" + client.getNickName() + " disconnected from server\n");
             }
         }
         for (int i = 0; i < busyPorts.length; i++) {
@@ -63,7 +63,7 @@ public class Server {
         if(isServerWorking){
             return true;
         }
-        throw new ServerIsDownException("server is nor running\ntry again later\n");
+        throw new ServerIsDownException("server is not running\ntry again later\n");
     }
 
     private static boolean isPortRight(String port) throws PortException {
@@ -94,7 +94,7 @@ public class Server {
         Arrays.fill(busyPorts, "0");
         for (int i = 0; i < clientsOnline.size(); i++) {
             System.out.println("yes" + clientsOnline.size());
-            disconnect(clientsOnline.get(i));
+            disconnect(clientsOnline.get(i), false);
         }
 
     }
