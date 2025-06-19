@@ -1,6 +1,8 @@
 package Server;
 
 import Client.ClientGUI;
+import DB.ClientDataBase;
+import DB.DataBase;
 import Exceptions.PortException;
 import Exceptions.ServerIsDownException;
 import Exceptions.WrongServerException;
@@ -10,17 +12,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import Client.Client;
 
 public class Server {
 
     private static final String SERVER = "127.0.0.1";
-    private static final String[] ports = {"80", "17", "84"};
-    private static String[] busyPorts = {"0", "0", "0"};
+    private final String[] ports = {"80", "17", "84"};
+    private String[] busyPorts = {"0", "0", "0"};
     public static boolean isServerWorking = false;
+    private static ServerView view;
+    private static DataBase db;
 
-    public static List<ClientGUI> clientsOnline = new ArrayList<ClientGUI>();
+    private static List<Client> clientsOnline = new ArrayList<>();
 
-    public static boolean checkServer(String server, String port, ClientGUI client) throws RuntimeException {
+    public Server(ServerView view){
+        Server.view = view;
+        db = new ClientDataBase();
+    }
+
+    public boolean checkServer(String server, String port, Client client) throws RuntimeException {
         try {
             if( isServerRight(server) & checkWork() & isPortRight(port) & isPortFree(port)){
                 return true;
@@ -31,11 +41,18 @@ public class Server {
         return false;
     }
 
-    public static void connectToServer(ClientGUI client){
+    private boolean checkLogin(Client client){
+
+    }
+
+    public boolean connectToServer(Client client){
+        if(checkServer(client.getIp(), client.getPort(), client)){
+
+        }
         if(!clientsOnline.contains(client)){
             clientsOnline.add(client);
         }
-        ServerWindow.appendLog("\n" + client.getNickName() + " connected to server\n" + readInChat());
+        ServerWindow.appendLog("\n" + client.getName() + " connected to server\n" + readInChat());
     }
 
     private static boolean isServerRight(String server) throws WrongServerException {
@@ -44,12 +61,27 @@ public class Server {
         }else throw new WrongServerException("server not found\ntry another\n");
     }
 
-    public static void disconnect(ClientGUI client, boolean isClientGuiClosed){
+    public static void disconnect(Client client, boolean isClientGuiClosed){
         for (int i = 0; i < clientsOnline.size(); i++) {
             if(client.equals(clientsOnline.get(i))){
-                if(!isClientGuiClosed) client.disconnectFromServer(false);
-                clientsOnline.get(i).setLogged(false);
+                if(!isClientGuiClosed) client.disconnect(false);
+//                clientsOnline.get(i).setLogged(false);
                 ServerWindow.appendLog("\n" + client.getNickName() + " disconnected from server\n");
+            }
+        }
+        for (int i = 0; i < busyPorts.length; i++) {
+            if(client.getPort().equals(busyPorts[i])){
+                busyPorts[i] = "0";
+            }
+        }
+    }
+
+    public static void disconnect(Client client){
+        for (int i = 0; i < clientsOnline.size(); i++) {
+            if(client.equals(clientsOnline.get(i))){
+//                if(!isClientGuiClosed) client.disconnectFromServer(false);
+//                clientsOnline.get(i).setLogged(false);
+                ServerWindow.appendLog("\n" + client.getName() + " disconnected from server\n");
             }
         }
         for (int i = 0; i < busyPorts.length; i++) {
@@ -91,14 +123,21 @@ public class Server {
     }
 
     public static void stopServer(){
-        Arrays.fill(busyPorts, "0");
-        for (int i = 0; i < clientsOnline.size(); i++) {
-            System.out.println("yes" + clientsOnline.size());
-            disconnect(clientsOnline.get(i), false);
+        if (!isServerWorking){
+            printText("Server is not running" + "\n");
+        } else {
+            isServerWorking = false;
+            printText("Server stopped " + false + "\n");
+            Arrays.fill(busyPorts, "0");
+            for (int i = 0; i < clientsOnline.size(); i++) {
+                disconnect(clientsOnline.get(i), false);
+            }
         }
-
     }
 
+    private static void printText(String msg){
+        view.printText(msg);
+    }
 
     public static void writeInChat(String msg){
         try(BufferedWriter fw =new BufferedWriter(new FileWriter("src/main/java/test.txt", true))){
@@ -113,8 +152,8 @@ public class Server {
     }
 
     private static void answerAll(String msg){
-        for (ClientGUI client : clientsOnline) {
-            client.answer(msg);
+        for (Client client : clientsOnline) {
+            client.printText(msg);
         }
     }
 
@@ -129,5 +168,15 @@ public class Server {
             throw new RuntimeException(e);
         }
         return sb;
+    }
+
+    public static void startServer() {
+        if(isServerWorking){
+            printText("Server is already running" + "\n");
+        }else{
+            db.getDB();
+            isServerWorking = true;
+            printText("Server started " + true + "\n");
+        }
     }
 }
