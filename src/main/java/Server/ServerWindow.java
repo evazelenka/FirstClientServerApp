@@ -1,7 +1,6 @@
 package Server;
 
 
-import DB.ClientDataBase;
 import lombok.Data;
 import lombok.Getter;
 
@@ -45,11 +44,13 @@ public class ServerWindow extends JFrame implements ServerView {
     }
 
     private void createPanel(){
-        log.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(log);
-
         add(createButtons(), BorderLayout.SOUTH);
-        add(scrollPane);
+        add(createLog());
+    }
+
+    private Component createLog(){
+        log.setEditable(false);
+        return new JScrollPane(log);
     }
 
     private Component createButtons(){
@@ -59,14 +60,14 @@ public class ServerWindow extends JFrame implements ServerView {
         btnStop.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Server.stopServer();
+                server.stopServer();
             }
         });
 
         btnStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Server.startServer();
+                server.startServer();
             }
         });
 

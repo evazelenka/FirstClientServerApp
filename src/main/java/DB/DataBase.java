@@ -6,6 +6,8 @@ import java.util.Objects;
 
 public interface DataBase {
 //    ArrayList<Object> objects = new ArrayList<>();
-    void pushDB(String name, String passwd);
+//    void pushDB(String name, String passwd);
     void getDB();
+    boolean checkData(String name, String passwd);
+    void signUp(String name, String passwd);
 }

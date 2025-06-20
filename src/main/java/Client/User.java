@@ -2,29 +2,18 @@ package Client;
 
 
 import lombok.Data;
+import lombok.Getter;
 
 @Data
 public class User {
     private String nickName;
-    private char[] passwd;
+    @Getter
+    private String passwd;
     private boolean isOnline = false;
-
-    public User(String nickName, char[] passwd){
-        this.nickName = nickName;
-        this.passwd = passwd;
-    }
 
     public User(String nickName, String passwd){
         this.nickName = nickName;
-        this.passwd = passwd.toCharArray();
-    }
-
-    public String getPasswd() {
-        StringBuilder p = new StringBuilder();
-        for(char c : passwd){
-           p.append(c);
-        }
-        return p.toString();
+        this.passwd = passwd;
     }
 
     public void setOnline(){

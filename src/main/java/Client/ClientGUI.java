@@ -21,14 +21,16 @@ public class ClientGUI extends JFrame implements ClientView {
     private static final int HEIGHT = 300;
 
     private JTextArea log;
-    private JTextField ip, nickName, sendField;
+    private JTextField ip = new JTextField();
+    private JTextField nickName = new JTextField();
+    private JTextField sendField = new JTextField();
+    private JPanel sendPanel;
 
     private JComboBox<String> port = new JComboBox<>();
     private  JPasswordField passwd = new JPasswordField(20);
     private  JButton logInBtn = new JButton("login");
     private  JButton signUpBtn = new JButton("sign up");
     private  JButton sendBtn = new JButton("send");
-    ArrayList<User> users = ClientDataBase.getUsers();
 
 
     private Client client;
@@ -37,7 +39,6 @@ public class ClientGUI extends JFrame implements ClientView {
 
     public ClientGUI(ServerWindow serverWindow){
         client = new Client(this, serverWindow.getServer());
-
         setBounds(serverWindow.getX()+400, serverWindow.getY(), WIDTH, HEIGHT);
         setResizable(false);
         setTitle("Chat Client");
@@ -45,15 +46,13 @@ public class ClientGUI extends JFrame implements ClientView {
         createPanel();
     }
 
-
-
     public String getPort(){
         return port.getItemAt(port.getSelectedIndex());
     }
 
     private Component createHeader(){
         loginPanel = new JPanel(new GridLayout(2, 3));
-
+        System.out.println("header");
         logInBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -63,7 +62,10 @@ public class ClientGUI extends JFrame implements ClientView {
         signUpBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(signUp(new User(nickName.getText(), passwd.getPassword()))) log.append("signed up successfully");
+                if(signUp(nickName.getText(),
+                        getPasswd(passwd.getPassword()))){
+                    appendLog("signed up successfully");
+                };
             }
         });
 
@@ -81,36 +83,46 @@ public class ClientGUI extends JFrame implements ClientView {
         return loginPanel;
     }
 
-
+    private String getPasswd(char[] passwd){
+        StringBuilder p = new StringBuilder();
+        for(char c : passwd){
+            p.append(c);
+        }
+        return p.toString();
+    }
 
     private Component createFooter(){
+        System.out.println("footer");
         sendBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                message();
+                message(sendField.getText());
+                sendField.setText("");
             }
         });
         sendField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                message();
+                message(sendField.getText());
+                sendField.setText("");
             }
         });
-        JPanel sendPanel = new JPanel(new GridLayout(1, 2));
+        sendPanel = new JPanel(new GridLayout(1, 2));
         sendPanel.add(sendField);
         sendPanel.add(sendBtn);
-        return  sendPanel;
+        return sendPanel;
 
     }
 
-
     private void createPanel(){
+        System.out.println("panel");
         add(createHeader(), BorderLayout.NORTH);
         add(createLog());
         add(createFooter(), BorderLayout.SOUTH);
     }
 
     private Component createLog(){
+        System.out.println("log");
         log = new JTextArea();
         log.setEditable(false);
         return new JScrollPane(log);
@@ -133,26 +145,11 @@ public class ClientGUI extends JFrame implements ClientView {
     @Override
     protected void processWindowEvent(WindowEvent e) {
         if (e.getID() == WindowEvent.WINDOW_CLOSING){
-            disconnectFromServer(true);
+//            disconnectFromServer(true);
+            client.disconnect(true);
         }
         super.processWindowEvent(e);
     }
-
-//    private void connectToServer(){
-//        try {
-//            if(checkLogin(ip.getText(), port.getItemAt(port.getSelectedIndex()), nickName.getText(), passwd.getPassword())){
-//                Server.reservePort(port.getItemAt(port.getSelectedIndex()));
-////                ClientDataBase.getClientByNickName(nickName.getText()).setOnline();
-//                logged = true;
-//                loginPanel.setVisible(false);
-//                System.out.println(LOGIN_SUCCESS);
-//                log.append(LOGIN_SUCCESS);
-//                log.setText(String.valueOf(Server.readInChat()));
-//            }
-//        } catch (RuntimeException e) {
-//            log.append(e.getMessage());
-//        }
-//    }
 
     private void connectToServer(){
         if(client.connectToServer(getNickName(), getPassword(passwd.getPassword()), ip.getText(), getPort())){
@@ -164,34 +161,18 @@ public class ClientGUI extends JFrame implements ClientView {
         loginPanel.setVisible(visible);
     }
 
-    public void disconnectFromServer(boolean isClientGuiClosed){
-//        if(logged){
-//            logged = false;
-//            ClientDataBase.getClientByNickName(nickName.getText()).setOffline();
-//            loginPanel.setVisible(true);
-//            Server.disconnect(this, isClientGuiClosed);
-//            log.setText("disconnect\n");
-//        }
+    private boolean signUp(String name, String passwd){
+        try {
+            client.signUp(name, passwd);
+            return true;
+        } catch (RuntimeException e) {
+            log.append(e.getMessage());
+            return false;
+        }
     }
 
-    private boolean signUp(User user){
-//        try {
-//            ClientDataBase.signUp(user);
-//            return true;
-//        } catch (RuntimeException e) {
-//            log.append(e.getMessage());
-//            return false;
-//        }
-    }
-
-    private void message(){
-//        if(logged){
-//            String text = sendField.getText();
-//            if(!text.equals("")){
-//                Server.writeInChat(nickName.getText() + ": " + text);
-//                sendField.setText("");
-//            }else log.append(SERVER_IS_DOWN);
-//        }
+    private void message(String msg){
+        client.sendMessage(msg);
     }
 
 //    public boolean checkLogin(String server, String port, String name, char[] passwd) throws RuntimeException {

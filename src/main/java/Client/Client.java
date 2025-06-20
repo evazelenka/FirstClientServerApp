@@ -1,10 +1,6 @@
 package Client;
 
-import DB.ClientDataBase;
-import Exceptions.UnknownAccountException;
-import Exceptions.WrongPasswdException;
 import Server.Server;
-import Server.ServerWindow;
 import lombok.Getter;
 
 //логика
@@ -28,7 +24,7 @@ public class Client {
         if(server.connectToServer(this)){
             printText("connected successfully");
             connected = true;
-            String log = server.getChat();
+            String log = server.readInChat();
             if(log != null){
                 printText(log);
             }
@@ -43,7 +39,7 @@ public class Client {
         if(connected){
             connected = false;
             view.disconnectFromServer();
-            Server.disconnect(this, false);
+            server.disconnect(this, isClientGuiClosed);
             printText("you was disconnected");
         }
     }
@@ -51,7 +47,7 @@ public class Client {
     public void sendMessage(String msg){
         if(connected){
             if(!msg.isEmpty()){
-                server.sendMessage(name + ": " + msg);
+                server.writeInChat(name + ": " + msg);
             }
         }else {
             printText("connection failed");
@@ -67,4 +63,7 @@ public class Client {
         view.sendMessage(msg);
     }
 
+    public void signUp(String name, String passwd) {
+        server.signUp(name, passwd);
+    }
 }

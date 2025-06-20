@@ -12,7 +12,7 @@ public class ClientDataBase implements DataBase{
     private static ArrayList<User> users = new ArrayList<>();
     private static int size = 0;
 
-    public static User getClientByNickName(String name){
+    private static User getClientByNickName(String name){
         for (int i = 0; i < users.size(); i++) {
             if(users.get(i).getNickName().equals(name)){
                 return users.get(i);
@@ -22,9 +22,18 @@ public class ClientDataBase implements DataBase{
     }
 
     @Override
-    public void pushDB(String name, String passwd) {
+    public boolean checkData(String name, String passwd){
+        for (int i = 0; i < users.size(); i++) {
+            if(users.get(i).getNickName().equals(name) & users.get(i).getPasswd().equals(passwd)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void pushDB(User user) {
         try(BufferedWriter fw =new BufferedWriter(new FileWriter("src/main/java/db.txt", true))){
-            fw.write(new User(name, passwd).toString());
+            fw.write(user.toString());
             fw.newLine();
             fw.flush();
         } catch (IOException e) {
@@ -49,14 +58,12 @@ public class ClientDataBase implements DataBase{
         }
     }
 
-    public static void pushDB(User user){
-
-    }
-
-    public void signUp(User user) throws RuntimeException {
-        if (getClientByNickName(user.getNickName()) == null) {
+    @Override
+    public void signUp(String name, String passwd) throws RuntimeException {
+        if (getClientByNickName(name) == null){
+            User user = new User(name, passwd);
             users.add(user);
-            pushDB(user.getNickName(), user.getPasswd());
+            pushDB(user);
         }else throw new RuntimeException("the account is already exist");
     }
 

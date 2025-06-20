@@ -2,3 +2,18 @@ varik: hi
 zelenka: hi
 zelenka: how are u
 norman: hi
+z: hi
+z: how are u
+z: go
+
+z: 12
+
+z: 34
+
+zelenka: 1234
+zelenka: hgjg
+zelenka: 12
+zelenka: привет
+zelenka: как дела
+zelenka: hgfkgj
+zelenka: gfknbkf
