@@ -52,7 +52,6 @@ public class ClientGUI extends JFrame implements ClientView {
 
     private Component createHeader(){
         loginPanel = new JPanel(new GridLayout(2, 3));
-        System.out.println("header");
         logInBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -62,10 +61,7 @@ public class ClientGUI extends JFrame implements ClientView {
         signUpBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(signUp(nickName.getText(),
-                        getPasswd(passwd.getPassword()))){
-                    appendLog("signed up successfully");
-                };
+                signUp(getNickName(), getPasswd(passwd.getPassword()));
             }
         });
 
@@ -92,7 +88,6 @@ public class ClientGUI extends JFrame implements ClientView {
     }
 
     private Component createFooter(){
-        System.out.println("footer");
         sendBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -115,14 +110,12 @@ public class ClientGUI extends JFrame implements ClientView {
     }
 
     private void createPanel(){
-        System.out.println("panel");
         add(createHeader(), BorderLayout.NORTH);
         add(createLog());
         add(createFooter(), BorderLayout.SOUTH);
     }
 
     private Component createLog(){
-        System.out.println("log");
         log = new JTextArea();
         log.setEditable(false);
         return new JScrollPane(log);
@@ -174,44 +167,6 @@ public class ClientGUI extends JFrame implements ClientView {
     private void message(String msg){
         client.sendMessage(msg);
     }
-
-//    public boolean checkLogin(String server, String port, String name, char[] passwd) throws RuntimeException {
-//        try {
-//            if(Server.checkServer(server, port, this)& checkPasswd(name, getPassword(passwd)) & !checkOnline(name)){
-////                Server.connectToServer(this);
-//                ClientDataBase.getClientByNickName(name).setOnline();
-//                return true;
-//            }
-//        } catch (RuntimeException e) {
-//            throw new RuntimeException(e.getMessage());
-//        }
-//        return false;
-//    }
-
-//    private boolean checkOnline(String name) throws RuntimeException {
-//        if(ClientDataBase.getClientByNickName(name).isOnline()){
-//            throw new RuntimeException("user is already online");
-//        }
-//        return false;
-//    }
-//
-//    private boolean checkNickName(String name) throws UnknownAccountException {
-//        for (int i = 0; i < ClientDataBase.getUsers().size(); i++) {
-//            if(users.get(i).getNickName().equals(name)){
-//                return true;
-//            }
-//        }
-//        throw new UnknownAccountException("create the account first\n");
-//    }
-//
-//    private boolean checkPasswd(String name, String passwd){
-//        if(checkNickName(name)){
-//            if(ClientDataBase.getClientByNickName(name).getPasswd().equals(passwd)){
-//                return true;
-//            }
-//        }
-//        throw new WrongPasswdException("wrong password\n");
-//    }
 
     public void appendLog(String message){
         log.append(message + "\n");

@@ -1,5 +1,6 @@
 package Client;
 
+import Exceptions.UnknownAccountException;
 import Server.Server;
 import lombok.Getter;
 
@@ -21,18 +22,22 @@ public class Client {
         this.passwd = passwd;
         this.ip = ip;
         this.port = port;
-        if(server.connectToServer(this)){
-            printText("connected successfully");
-            connected = true;
-            String log = server.readInChat();
-            if(log != null){
-                printText(log);
+        try {
+            if(server.connectToServer(this)){
+                printText("connected successfully");
+                connected = true;
+                String log = server.readInChat();
+                if(log != null){
+                    printText(log);
+                }
+                return true;
+            }else {
+                printText("connection failed");
             }
-            return true;
-        }else {
-            printText("connection failed");
-            return false;
+        } catch (Exception e) {
+            serverAnswer(e.getMessage());
         }
+        return false;
     }
 
     public void disconnect(boolean isClientGuiClosed){
@@ -40,6 +45,17 @@ public class Client {
             connected = false;
             view.disconnectFromServer();
             server.disconnect(this, isClientGuiClosed);
+            server.sendMessage("\n" + getName() + " disconnected from server\n");
+            printText("you was disconnected");
+        }
+    }
+
+    public void disconnect(){
+        if(connected){
+            connected = false;
+            view.disconnectFromServer();
+            server.disconnect(this, false);
+            server.sendMessage("\n" + getName() + " disconnected from server\n");
             printText("you was disconnected");
         }
     }
@@ -64,6 +80,11 @@ public class Client {
     }
 
     public void signUp(String name, String passwd) {
-        server.signUp(name, passwd);
+        try {
+            server.signUp(name, passwd);
+            printText("signed up successfully");
+        } catch (UnknownAccountException e) {
+            serverAnswer(e.getMessage());
+        }
     }
 }

@@ -1,5 +1,6 @@
 package DB;
 import Client.User;
+import Exceptions.UnknownAccountException;
 import Server.ServerWindow;
 import lombok.Getter;
 
@@ -22,13 +23,31 @@ public class ClientDataBase implements DataBase{
     }
 
     @Override
-    public boolean checkData(String name, String passwd){
+    public boolean checkData(String name, String passwd) throws UnknownAccountException {
         for (int i = 0; i < users.size(); i++) {
-            if(users.get(i).getNickName().equals(name) & users.get(i).getPasswd().equals(passwd)){
+            if(checkName(name) & checkPasswd(passwd)){
                 return true;
             }
         }
-        return false;
+        throw new UnknownAccountException("sign up first");
+    }
+
+    private boolean checkName(String name){
+        for (int i = 0; i < users.size(); i++) {
+            if(users.get(i).getNickName().equals(name)){
+                return true;
+            }
+        }
+        throw new UnknownAccountException("sign up first");
+    }
+
+    private boolean checkPasswd(String passwd){
+        for (int i = 0; i < users.size(); i++) {
+            if(users.get(i).getPasswd().equals(passwd)){
+                return true;
+            }
+        }
+        throw new UnknownAccountException("wrong password");
     }
 
     private void pushDB(User user) {
@@ -59,12 +78,12 @@ public class ClientDataBase implements DataBase{
     }
 
     @Override
-    public void signUp(String name, String passwd) throws RuntimeException {
+    public void signUp(String name, String passwd) throws UnknownAccountException {
         if (getClientByNickName(name) == null){
             User user = new User(name, passwd);
             users.add(user);
             pushDB(user);
-        }else throw new RuntimeException("the account is already exist");
+        }else throw new UnknownAccountException("the account is already exist");
     }
 
 }

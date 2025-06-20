@@ -4,12 +4,12 @@ import DB.ClientDataBase;
 import DB.DataBase;
 import Exceptions.PortException;
 import Exceptions.ServerIsDownException;
+import Exceptions.UnknownAccountException;
 import Exceptions.WrongServerException;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import Client.Client;
 
@@ -41,9 +41,16 @@ public class Server {
     }
 
     private boolean checkLogin(Client client){
-        if(db.checkData(client.getName(), client.getPasswd()) & !clientsOnline.contains(client)){
-            return true;
+        return db.checkData(client.getName(), client.getPasswd()) & !isClientAlreadyOnline(client);
+    }
+
+    private boolean isClientAlreadyOnline(Client client) throws UnknownAccountException {
+        for (int i = 0; i < clientsOnline.size(); i++) {
+            if(clientsOnline.get(i).getName().equals(client.getName())){
+                throw new UnknownAccountException("user is already online");
+            }
         }
+        System.out.println(clientsOnline.contains(client));
         return false;
     }
 
@@ -67,9 +74,10 @@ public class Server {
         String clientPort = client.getPort();
         for (int i = 0; i < clientsOnline.size(); i++) {
             if(client.equals(clientsOnline.get(i))){
-                if(!isClientGuiClosed) client.disconnect(false);
-                clientsOnline.remove(clientsOnline.get(i));
-                sendMessage("\n" + client.getName() + " disconnected from server\n");
+                client.disconnect();
+                if(!clientsOnline.isEmpty()){
+                    clientsOnline.remove(clientsOnline.get(i));
+                }
             }
         }
         for (int i = 0; i < busyPorts.length; i++) {
@@ -172,7 +180,7 @@ public class Server {
         view.printText(msg);
     }
 
-    public void signUp(String name, String passwd) {
+    public void signUp(String name, String passwd) throws UnknownAccountException {
         db.signUp(name, passwd);
     }
 }
