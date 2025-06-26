@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import Client.Client;
+import repository.FileStorage;
 
 public class Server {
 
@@ -21,12 +22,14 @@ public class Server {
     public static boolean isServerWorking = false;
     private static ServerView view;
     private static DataBase db;
+    FileStorage fs;
 
     private static ArrayList<Client> clientsOnline = new ArrayList<>();
 
     public Server(ServerView view){
         Server.view = view;
         db = new ClientDataBase();
+        fs = new FileStorage();
     }
 
     public boolean checkServer(String server, String port, Client client) throws RuntimeException {
@@ -136,15 +139,9 @@ public class Server {
     }
 
     public void writeInChat(String msg){
-        try(BufferedWriter fw =new BufferedWriter(new FileWriter("src/main/java/test.txt", true))){
-            fw.write(msg);
-            fw.newLine();
-            fw.flush();
-            answerAll(msg);
-            sendMessage(msg);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        fs.save(msg);
+        answerAll(msg);
+        sendMessage(msg);
     }
 
     private void answerAll(String msg){
@@ -154,16 +151,7 @@ public class Server {
     }
 
     public String readInChat(){
-        StringBuilder sb = new StringBuilder();
-        try( BufferedReader fr = new BufferedReader(new FileReader("src/main/java/test.txt"))){
-            String line;
-            while((line = fr.readLine()) != null){
-                sb.append(line).append("\n");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return String.valueOf(sb);
+        return fs.load();
     }
 
     public void startServer() {
